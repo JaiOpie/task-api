@@ -1,6 +1,6 @@
 package com.project.task_api.repository;
 
-import com.project.task_api.dto.Task;
+import com.project.task_api.entity.Task;
 
 import java.util.List;
 import java.util.Optional;

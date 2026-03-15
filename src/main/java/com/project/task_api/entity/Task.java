@@ -1,4 +1,6 @@
-package com.project.task_api.dto;
+package com.project.task_api.entity;
+
+import com.project.task_api.dto.TaskStatus;
 
 import java.time.LocalDate;
 

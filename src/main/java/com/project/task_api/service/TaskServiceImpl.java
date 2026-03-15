@@ -1,13 +1,17 @@
 package com.project.task_api.service;
 
 import com.project.task_api.dto.CreateTask;
-import com.project.task_api.dto.Task;
+import com.project.task_api.entity.Task;
 import com.project.task_api.dto.TaskStatus;
 import com.project.task_api.dto.UpdateTask;
+import com.project.task_api.exception.InvalidDueDateException;
+import com.project.task_api.exception.InvalidTaskStatusException;
 import com.project.task_api.exception.TaskNotFoundException;
 import com.project.task_api.repository.TaskRepository;
+import com.project.task_api.util.StateTransitionUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,9 +19,11 @@ import java.util.UUID;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
+    private final StateTransitionUtil stateTransitionUtil;
 
-    public TaskServiceImpl(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository, StateTransitionUtil stateTransitionUtil) {
         this.taskRepository = taskRepository;
+        this.stateTransitionUtil = stateTransitionUtil;
     }
 
 
@@ -47,11 +53,28 @@ public class TaskServiceImpl implements TaskService {
         if (request.getDescription() != null)
             task.setDescription(request.getDescription());
 
-        if (request.getStatus() != null)
-            task.setStatus(request.getStatus());
+        if (request.getStatus() != null) {
 
-        if (request.getDueDate() != null)
+            TaskStatus currentStatus = task.getStatus();
+            TaskStatus newStatus = request.getStatus();
+
+            if (!stateTransitionUtil.isValidStatusTransition(currentStatus, newStatus)) {
+                throw new InvalidTaskStatusException(
+                        "Invalid status transition from " + currentStatus + " to " + newStatus
+                );
+            }
+
+            task.setStatus(newStatus);
+        }
+
+        if (request.getDueDate() != null) {
+
+            if (request.getDueDate().isBefore(LocalDate.now())) {
+                throw new InvalidDueDateException();
+            }
+
             task.setDueDate(request.getDueDate());
+        }
 
         return taskRepository.save(task);
     }
@@ -65,7 +88,20 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
-    }
+    public List<Task> getAllTasks(TaskStatus status, int page, int size) {
+        List<Task> tasks = taskRepository.findAll();
+
+        if(status!=null) {
+            tasks = tasks.stream().filter(task -> task.getStatus() == status).toList();
+        }
+
+            int start = page*size;
+            int end = Math.min(start + size, tasks.size());
+
+            if(start>tasks.size()){
+                return List.of();
+            }
+            return tasks.subList(start,end);
+        }
+
 }

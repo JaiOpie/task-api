@@ -1,5 +1,6 @@
 package com.project.task_api.dto;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -36,6 +37,7 @@ public class CreateTask {
 
     private String description;
 
+    @Future
     @NotNull
     private LocalDate dueDate;
 }

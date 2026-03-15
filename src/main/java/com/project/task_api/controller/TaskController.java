@@ -1,7 +1,8 @@
 package com.project.task_api.controller;
 
 import com.project.task_api.dto.CreateTask;
-import com.project.task_api.dto.Task;
+import com.project.task_api.entity.Task;
+import com.project.task_api.dto.TaskStatus;
 import com.project.task_api.dto.UpdateTask;
 import com.project.task_api.service.TaskService;
 import jakarta.validation.Valid;
@@ -34,8 +35,13 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+    public ResponseEntity<List<Task>> getAllTasks(
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size)
+     {
+
+        return ResponseEntity.ok(taskService.getAllTasks(status,page,size));
     }
 
     @PutMapping("/{id}")
