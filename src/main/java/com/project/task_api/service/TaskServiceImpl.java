@@ -6,10 +6,12 @@ import com.project.task_api.dto.TaskStatus;
 import com.project.task_api.dto.UpdateTask;
 import com.project.task_api.exception.TaskNotFoundException;
 import com.project.task_api.repository.TaskRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
